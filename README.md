@@ -93,19 +93,3 @@ Or use the run script:
 bash run_app.sh
 ```
 
-## Usage
-
-- The app automatically manages the generated images folder.
-- If the number of PNG images in `/app/static/generated_images` exceeds 30, older images will be deleted to free space.
-
-## Contributing
-
-Feel free to open issues or submit pull requests to improve the project.
-
-## License
-
-Specify your project license here.
-
----
-
-If you want me to include anything else like API docs, usage examples, or detailed config instructions, just say!
