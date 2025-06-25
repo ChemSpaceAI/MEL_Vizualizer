@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Reaction Selector{% endblock %}
+
+{% block content %}
+<form method="GET" action="{{ url_for('main.view_by_mel_type') }}" class="p-4" style="max-width: 600px; margin: auto;">
+
+    <!-- Step 1: Reaction Scope -->
+    <div class="mb-3">
+        <label class="form-label"><strong>Reaction Scope</strong></label>
+        <select name="reaction_scope" class="form-select form-select-lg">
+            <option value="unique" {% if request.args.reaction_scope == 'unique' %}selected{% endif %}>Unique Reactions Only</option>
+            <option value="all" {% if request.args.reaction_scope == 'all' %}selected{% endif %}>All Reactions</option>
+        </select>
+    </div>
+
+    <!-- Step 2: MEL Type -->
+    <div class="mb-3">
+        <label class="form-label"><strong>MEL Type</strong></label>
+        <select name="mel_type" class="form-select form-select-lg">
+            <option value="bridge" {% if request.args.mel_type == 'bridge' %}selected{% endif %}>Bridge</option>
+            <option value="3_component" {% if request.args.mel_type == '3_component' %}selected{% endif %}>3-Component</option>
+            <option value="2_component" {% if request.args.mel_type == '2_component' %}selected{% endif %}>2-Component</option>
+     
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-success btn-lg">Go</button>
+    </div>
+</form>
+{% endblock %}

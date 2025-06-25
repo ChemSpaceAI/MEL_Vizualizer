@@ -1,0 +1,62 @@
+{% import "macros.html" as macros %}
+
+{% extends "base.html" %}
+{% block title %}Reaction Viewer{% endblock %}
+
+{% block content %}
+
+<h2>MEL Type: {{ mel_type }}</h2>
+
+<!-- ========== Form ========== -->
+<form method="GET" class="mb-4">
+    <input type="hidden" name="mel_type" value="{{ mel_type }}">
+
+    {% if reaction_ids %}
+        <div class="mb-3">
+            <label class="form-label"><strong>Reaction ID</strong></label>
+            <select name="reaction_id" class="form-select form-select-lg">
+                {% for rid in reaction_ids %}
+                    <option value="{{ rid }}" {% if rid == reaction_id %}selected{% endif %}>{{ rid }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+
+</form>
+
+<!-- ========== Enumeration Algorythm ========== -->
+{# Enumeration Example #}
+{% if action == "show_enumeration_example" %}
+  {% if enumeration_info.error %}
+    <p style="color: red;">{{ generation_info.error }}</p>
+  {% else %}
+    {% if mel_type == "2_component" %}
+      <h3>Enumeration Example (2-Component)</h3>
+      {{ macros.render_enumeration_route(
+          enumeration_info.query1a,
+          "Route A: Synthon 1a + Synthon 2a → Product",
+          [enumeration_info.reagent_1a, enumeration_info.reagent_2a],
+          enumeration_info.product_2a
+      ) }}
+
+      {{ macros.render_enumeration_route(
+          enumeration_info.query1b,
+          "Route B: Synthon 1b + Synthon 2b → Product",
+          [enumeration_info.reagent_1b, enumeration_info.reagent_2b],
+          enumeration_info.product_2b
+      ) }}
+     {% elif mel_type == "3_component" %} 
+      <h3>Enumeration Example (3-Component)</h3>
+      {{ macros.render_route("Route 1", [generation_info.reagent_1, generation_info.reagent_2, generation_info.reagent_3], generation_info.product_1) }}
+      {{ macros.render_route("Route 2", [generation_info.reagent_4, generation_info.reagent_5, generation_info.reagent_6], generation_info.product_2) }}
+      {{ macros.render_route("Route 3", [generation_info.reagent_7, generation_info.reagent_8, generation_info.reagent_9], generation_info.product_3) }}
+    {% elif mel_type == "bridge" %}
+      <h3>Enumeration Example (Bridge)</h3>
+      {{ macros.render_route("Route 1: Synthon 1 + MinCap 2 → Product 1", [generation_info.reagent_1, generation_info.reagent_2], generation_info.product_1) }}
+      {{ macros.render_route("Route 2: Synthon 2 + MinCap 1 → Product 2", [generation_info.reagent_3, generation_info.reagent_4], generation_info.product_2) }}
+    {% endif %}
+{% endif %}
+{% endif %}
+
+<!-- ========== End ========== -->
+{% endblock %}

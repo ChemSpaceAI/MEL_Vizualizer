@@ -1,0 +1,9 @@
+nohup: ignoring input
+[2025-06-25 17:22:11 +0300] [3420727] [INFO] Starting gunicorn 23.0.0
+[2025-06-25 17:22:11 +0300] [3420727] [INFO] Listening at: http://10.244.32.19:3937 (3420727)
+[2025-06-25 17:22:11 +0300] [3420727] [INFO] Using worker: gthread
+[2025-06-25 17:22:11 +0300] [3420728] [INFO] Booting worker with pid: 3420728
+[2025-06-25 17:25:48 +0300] [3420727] [INFO] Handling signal: int
+[2025-06-25 17:25:48 +0300] [3420728] [INFO] Worker exiting (pid: 3420728)
+[2025-06-25 17:25:49 +0300] [3420727] [ERROR] Worker (pid:3420728) was sent SIGINT!
+[2025-06-25 17:25:49 +0300] [3420727] [INFO] Shutting down: Master

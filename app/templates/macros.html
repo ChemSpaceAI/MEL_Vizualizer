@@ -1,0 +1,181 @@
+
+
+{% macro render_molecule(mol, show_plus=false, comment=None) %}
+    {% if mol and mol.img_name %}
+        <div class="mol-container text-center" style="display: inline-block; margin: 10px;">
+            {% if comment %}
+              <p style="font-size: 0.7rem; color: #6f42c1; margin-bottom: 4px;"><em>{{ comment }}</em></p>
+            {% endif %}
+            <img src="{{ url_for('static', filename='generated_images/' ~ mol.img_name) }}" 
+                 alt="{{ mol.smiles }}" 
+                 title="Molecule: {{ mol.ID }}" 
+                 style="cursor: pointer; max-width: 150px; border: 2px solid transparent;"
+                 onmouseover="this.style.borderColor='#0d6efd';" 
+                 onmouseout="this.style.borderColor='transparent';">
+            <p><strong>{{ mol.ID }}</strong></p>
+            <p style="font-size: 0.4rem; color: #888; user-select: all; margin-top: -10px; max-width: 150px; word-wrap: break-word;">
+                {{ mol.smiles }}
+            </p>
+        </div>
+        {% if show_plus %}
+            <div style="font-size: 2rem; font-weight: bold; margin: 0 10px;">+</div>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+
+{% macro render_route(route_title, reagents, product) %}
+  <div style="margin-bottom: 30px;">
+    <h4>{{ route_title }}</h4>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      {%- for reagent in reagents %}
+        {{ render_molecule(reagent, show_plus=not loop.last, comment=reagent.role) }}
+      {%- endfor %}
+      <div style="font-size: 2rem; font-weight: bold;">=</div>
+      {{ render_molecule(product) }}
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro render_enumeration_route(query_mol, route_title, reagents, product) %}
+  <div style="margin-bottom: 40px; display: flex; align-items: flex-start; gap: 20px;">
+
+    <!-- Query Molecule -->
+    <div style="text-align: center;">
+      <p><strong>Query</strong></p>
+      {{ render_molecule(query_mol) }}
+    </div>
+
+    <!-- Visual Divider -->
+    <div style="border-left: 2px solid #333; height: 100px; margin: 0 10px;"></div>
+
+    <!-- Reaction Route -->
+    <div>
+      <!-- 👇 Change this line -->
+      <p style="font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; color: #888;">
+        {{ route_title }}
+      </p>
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+        {%- for reagent in reagents %}
+          {{ render_molecule(reagent, show_plus=not loop.last, comment=reagent.role) }}
+        {%- endfor %}
+        <div style="font-size: 2rem; font-weight: bold;">=</div>
+        {{ render_molecule(product) }}
+      </div>
+    </div>
+
+  </div>
+{% endmacro %}
+
+
+{# Renders the full 3-comp route with 2 branches (A and B) #}
+{% macro render_3_comp_branches(query_mol, branch_a, branch_b, case_title="Enumeration Case") %}
+  <div class="mb-5">
+  <!-- Divider -->
+    <hr class="my-4 border-primary" />
+    <h4 class="mb-3">{{ case_title }}</h4>
+    <hr class="my-4 border-secondary" />
+    <!-- Branch A -->
+    <div class="mb-4">
+      <h5 class="text-primary">Combination 1</h5>
+      {{ render_enumeration_route(
+          query_mol,
+          "Iteration 1",
+          [branch_a.reagent_1, branch_a.reagent_2, branch_a.reagent_3],
+          branch_a.product
+      ) }}
+      {{ render_enumeration_route(
+          branch_a.product,
+          "Iteration 2",
+          [branch_a.reagent_4, branch_a.reagent_5, branch_a.reagent_6],
+          branch_a.product_2
+      ) }}
+    </div>
+
+    <!-- Divider -->
+    <hr class="my-4 border-secondary" />
+
+    <!-- Branch B -->
+    <div>
+      <h5 class="text-success">Combination 2</h5>
+      {{ render_enumeration_route(
+          query_mol,
+          "Iteration 1",
+          [branch_b.reagent_1, branch_b.reagent_2, branch_b.reagent_3],
+          branch_b.product
+      ) }}
+      {{ render_enumeration_route(
+          branch_b.product,
+          "Iteration 2",
+          [branch_b.reagent_4, branch_b.reagent_5, branch_b.reagent_6],
+          branch_b.product_2
+      ) }}
+    </div>
+
+  </div>
+{% endmacro %}
+
+{% macro render_bridge_molecules(bridge_mol, subbridge_a, subbridge_b) %}
+  <div class="mb-5">
+    <!-- Layout: Subbridge A <- Bridge -> Subbridge B -->
+    <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap text-center">
+
+      <!-- Subbridge A -->
+      <div>
+        <p class="fw-bold text-primary">Subbridge A</p>
+        {{ render_molecule(subbridge_a) }}
+      </div>
+
+      <!-- Arrow from Bridge to Subbridge A -->
+      <div class="d-none d-md-block" style="font-size: 2rem; transform: rotate(180deg); margin-top: -10px;">→</div>
+
+      <!-- Bridge -->
+      <div>
+        <p class="fw-bold text-muted">Bridge</p>
+        {{ render_molecule(bridge_mol) }}
+      </div>
+
+      <!-- Arrow from Bridge to Subbridge B -->
+      <div class="d-none d-md-block" style="font-size: 2rem; margin-top: -10px;">→</div>
+
+      <!-- Subbridge B -->
+      <div>
+        <p class="fw-bold text-success">Subbridge B</p>
+        {{ render_molecule(subbridge_b) }}
+      </div>
+
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro render_2_iteration_case(case_data, case_title="Enumeration Case") %}
+  <div class="mb-5">
+    <hr class="my-4 border-primary" />
+    <h4 class="mb-3">{{ case_title }}</h4>
+    <hr class="my-4 border-secondary" />
+
+    <!-- Iteration 1 -->
+    <div class="mb-4">
+      <h6 class="text-primary" style="font-size: 0.9rem;">Iteration 1</h6>
+      {{ render_enumeration_route(
+          case_data.query_1a,
+          "",
+          [case_data.reagent_1a, case_data.reagent_2a, case_data.reagent_3a],
+          case_data.product_1a
+      ) }}
+    </div>
+
+    <!-- Iteration 2 -->
+    <div class="mb-4">
+      <h6 class="text-success" style="font-size: 0.9rem;">Iteration 2</h6>
+      {{ render_enumeration_route(
+          case_data.query_2a,
+          "",
+          [case_data.reagent_4a, case_data.reagent_5a, case_data.reagent_6a],
+          case_data.product_2a
+      ) }}
+    </div>
+  </div>
+{% endmacro %}

@@ -1,0 +1,330 @@
+{% import "macros.html" as macros %}
+
+{% extends "base.html" %}
+{% block title %}Reaction Viewer{% endblock %}
+
+{% block content %}
+
+<h2>MEL Type: {{ mel_type }}</h2>
+
+<!-- ========== Form ========== -->
+<form method="GET" class="mb-4">
+    <input type="hidden" name="mel_type" value="{{ mel_type }}">
+
+    {% if reaction_ids %}
+        <div class="mb-3">
+            <label class="form-label"><strong>Reaction ID</strong></label>
+            <select name="reaction_id" class="form-select form-select-lg">
+                {% for rid in reaction_ids %}
+                    <option value="{{ rid }}" {% if rid == reaction_id %}selected{% endif %}>{{ rid }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3 d-flex gap-2 flex-wrap">
+            <button type="submit" name="action" value="show_REAL_reaction" class="btn btn-info">REAL Reaction</button>
+            <button type="submit" name="action" value="show_generation_mincaps" class="btn-secondary">Show Generation Mincaps</button>
+            <button type="submit" name="action" value="show_generation_example" class="btn btn-success">Generation MEL example</button>
+            <button type="submit" name="action" value="show_enumeration_mincaps" class="btn-secondary">Show Enumeration Mincaps</button>
+            <button type="submit" name="action" value="show_enumeration_example" class="btn btn-warning">Enumeration MEL example</button>     
+        </div>
+        
+    {% endif %}
+
+</form>
+
+<!-- ========== Enumeration Algorythm ========== -->
+{# Enumeration Example #}
+{% if action == "show_enumeration_example" %}
+  {% if enumeration_info.error %}
+    <p style="color: red;">{{ generation_info.error }}</p>
+  {% else %}
+    <!-- ===2_component visualization=== -->
+    {% if mel_type == "2_component" %}
+  <h3 class="mb-3">Enumeration Example (2-Component)</h3>
+
+  <h4 class="mb-4">
+    N<sub>syn1</sub>: <span class="text-primary fw-bold">{{ enum_tables_info.len_s1 }}</span>, 
+    N<sub>syn2</sub>: <span class="text-success fw-bold">{{ enum_tables_info.len_s2 }}</span>.  
+    Subspace: <span class="text-warning fw-bold">{{ enum_tables_info.subspace }}</span> 
+    for ID: <span class="text-muted">{{ reaction_id }}</span>
+  </h4>
+  
+<hr class="my-4 border-secondary" />
+      {{ macros.render_enumeration_route(
+          enumeration_info.query1a,
+          "Route A: Synthon 1a + Synthon 2a → Product",
+          [enumeration_info.reagent_1a, enumeration_info.reagent_2a],
+          enumeration_info.product_2a
+      ) }}
+
+      {{ macros.render_enumeration_route(
+          enumeration_info.query1b,
+          "Route B: Synthon 1b + Synthon 2b → Product",
+          [enumeration_info.reagent_1b, enumeration_info.reagent_2b],
+          enumeration_info.product_2b
+      ) }}
+
+      <!-- ===3_component visualization=== -->
+
+     {% elif mel_type == "3_component" %} 
+
+    <h3 class="mb-3">Enumeration Example (3-Component)</h3>
+
+    <h4 class="mb-4">
+      N<sub>syn1</sub>: <span class="text-primary fw-bold">{{ enum_tables_info.len_s1 }}</span>, 
+      N<sub>syn2</sub>: <span class="text-success fw-bold">{{ enum_tables_info.len_s2 }}</span>,
+      N<sub>syn3</sub>: <span class="text-danger fw-bold">{{ enum_tables_info.len_s3 }}</span>.  
+      Subspace: <span class="text-warning fw-bold">{{ enum_tables_info.subspace }}</span> 
+      for ID: <span class="text-muted">{{ reaction_id }}</span>
+    </h4>
+
+    <div class="mb-4">
+      <label for="caseSelector" class="form-label fw-bold">Select Enumeration Case:</label>
+      <select id="caseSelector" class="form-select" onchange="showCase(this.value)">
+        <option value="case_1">Case 1</option>
+        <option value="case_2">Case 2</option>
+        <option value="case_3">Case 3</option>
+      </select>
+    </div>
+
+  <!-- CASE 1 -->
+  <div id="case_1" class="case-container">
+    {{ macros.render_3_comp_branches(
+        enumeration_info.case_1.query_1,
+        {
+          'reagent_1': enumeration_info.case_1.reagent_1a,
+          'reagent_2': enumeration_info.case_1.reagent_2a,
+          'reagent_3': enumeration_info.case_1.reagent_3a,
+          'product': enumeration_info.case_1.product_1a,
+          'reagent_4': enumeration_info.case_1.reagent_4a,
+          'reagent_5': enumeration_info.case_1.reagent_5a,
+          'reagent_6': enumeration_info.case_1.reagent_6a,
+          'product_2': enumeration_info.case_1.product_2a
+        },
+        {
+          'reagent_1': enumeration_info.case_1.reagent_1b,
+          'reagent_2': enumeration_info.case_1.reagent_2b,
+          'reagent_3': enumeration_info.case_1.reagent_3b,
+          'product': enumeration_info.case_1.product_1b,
+          'reagent_4': enumeration_info.case_1.reagent_4b,
+          'reagent_5': enumeration_info.case_1.reagent_5b,
+          'reagent_6': enumeration_info.case_1.reagent_6b,
+          'product_2': enumeration_info.case_1.product_2b
+        },
+        case_title="Case 1 (Core in Synthon 1)"
+    ) }}
+  </div>
+
+  <!-- CASE 2 -->
+  <div id="case_2" class="case-container" style="display: none;">
+    {{ macros.render_3_comp_branches(
+        enumeration_info.case_2.query_1,
+        {
+          'reagent_1': enumeration_info.case_2.reagent_1a,
+          'reagent_2': enumeration_info.case_2.reagent_2a,
+          'reagent_3': enumeration_info.case_2.reagent_3a,
+          'product': enumeration_info.case_2.product_1a,
+          'reagent_4': enumeration_info.case_2.reagent_4a,
+          'reagent_5': enumeration_info.case_2.reagent_5a,
+          'reagent_6': enumeration_info.case_2.reagent_6a,
+          'product_2': enumeration_info.case_2.product_2a
+        },
+        {
+          'reagent_1': enumeration_info.case_2.reagent_1b,
+          'reagent_2': enumeration_info.case_2.reagent_2b,
+          'reagent_3': enumeration_info.case_2.reagent_3b,
+          'product': enumeration_info.case_2.product_1b,
+          'reagent_4': enumeration_info.case_2.reagent_4b,
+          'reagent_5': enumeration_info.case_2.reagent_5b,
+          'reagent_6': enumeration_info.case_2.reagent_6b,
+          'product_2': enumeration_info.case_2.product_2b
+        },
+        case_title="Case 2 (Core in Synthon 2)"
+    ) }}
+  </div>
+
+  <!-- CASE 3 -->
+  <div id="case_3" class="case-container" style="display: none;">
+    {{ macros.render_3_comp_branches(
+        enumeration_info.case_3.query_1,
+        {
+          'reagent_1': enumeration_info.case_3.reagent_1a,
+          'reagent_2': enumeration_info.case_3.reagent_2a,
+          'reagent_3': enumeration_info.case_3.reagent_3a,
+          'product': enumeration_info.case_3.product_1a,
+          'reagent_4': enumeration_info.case_3.reagent_4a,
+          'reagent_5': enumeration_info.case_3.reagent_5a,
+          'reagent_6': enumeration_info.case_3.reagent_6a,
+          'product_2': enumeration_info.case_3.product_2a
+        },
+        {
+          'reagent_1': enumeration_info.case_3.reagent_1b,
+          'reagent_2': enumeration_info.case_3.reagent_2b,
+          'reagent_3': enumeration_info.case_3.reagent_3b,
+          'product': enumeration_info.case_3.product_1b,
+          'reagent_4': enumeration_info.case_3.reagent_4b,
+          'reagent_5': enumeration_info.case_3.reagent_5b,
+          'reagent_6': enumeration_info.case_3.reagent_6b,
+          'product_2': enumeration_info.case_3.product_2b
+        },
+        case_title="Case 3 (Core in Synthon 3)"
+    ) }}
+  </div>
+
+    {% elif mel_type == "bridge" %}
+
+    <h3 class="mb-3">Enumeration Example (Bridge Position {{ enum_tables_info.bridge_position }})</h3>
+
+    <h4 class="mb-4">
+      N<sub>syn1</sub>: <span class="text-primary fw-bold">{{ enum_tables_info.len_s1 }}</span>, 
+      N<sub>syn2</sub>: <span class="text-success fw-bold">{{ enum_tables_info.len_s2 }}</span>,
+      N<sub>syn3</sub>: <span class="text-danger fw-bold">{{ enum_tables_info.len_s3 }}</span>.  
+      Subspace: <span class="text-warning fw-bold">{{ enum_tables_info.subspace }}</span> 
+      for ID: <span class="text-muted">{{ reaction_id }}</span>
+    </h4>
+
+   {{ macros.render_bridge_molecules(
+  enumeration_info.bridge,
+  enumeration_info.subbridge_a,
+  enumeration_info.subbridge_b,
+) }}
+
+
+   <div class="mb-4">
+      <label for="caseSelector" class="form-label fw-bold">Select Enumeration Case:</label>
+      <select id="caseSelector" class="form-select" onchange="showCase(this.value)">
+        <option value="case_1">Case 1</option>
+        <option value="case_2">Case 2</option>
+      </select>
+    </div>
+
+      <div id="case_1" class="case-container">
+    {{ macros.render_2_iteration_case(enumeration_info['case_1'], case_title="Case 1") }}
+  </div>
+
+  <div id="case_2" class="case-container" style="display:none;">
+    {{ macros.render_2_iteration_case(enumeration_info['case_2'], case_title="Case 2") }}
+  </div>
+
+    {% endif %}
+{% endif %}
+{% endif %}
+
+<!-- ========== REAL Reaction ========== -->
+{# REAL Reaction #}
+{% if action == "show_REAL_reaction" %}
+  {% if synthons_info.error %}
+    <p style="color: red;">{{ synthons_info.error }}</p>
+  {% else %}
+    <h3>REAL Synthon CAPS</h3>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        {{ macros.render_molecule(synthons_info.synthon_1, show_plus=synthons_info.synthon_2 or synthons_info.synthon_3) }}
+        {{ macros.render_molecule(synthons_info.synthon_2, show_plus=synthons_info.synthon_3) }}
+        {{ macros.render_molecule(synthons_info.synthon_3) }}
+        <div style="font-size: 2rem; font-weight: bold; margin: 0 10px;">=</div>
+        {{ macros.render_molecule(synthons_info.product) }}
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- ========== Generation Mincaps Output ========== -->
+{# Generation Mincaps #}
+{% if action == "show_generation_mincaps" %}
+  {% if caps_info.error %}
+    <p style="color: red;">{{ caps_info.error }}</p>
+  {% else %}
+    <h3>MinCap Molecules for generation</h3>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      {{ macros.render_molecule(caps_info.min_cap_s1) }}
+      {{ macros.render_molecule(caps_info.min_cap_s2) }}
+      {{ macros.render_molecule(caps_info.min_cap_s3) }}
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- ========== Enumeration Mincaps Output ========== -->
+{# Enumeration Mincaps #}
+{% if action == "show_enumeration_mincaps" %}
+  {% if enum_caps_info.error %}
+    <p style="color: red;">{{ enum_caps_info.error }}</p>
+  {% else %}
+    <h3>MinCap Molecules for enumeration</h3>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      {{ macros.render_molecule(enum_caps_info.min_cap_s1) }}
+      {{ macros.render_molecule(enum_caps_info.min_cap_s2) }}
+      {{ macros.render_molecule(enum_caps_info.min_cap_s3) }}
+    </div>
+  {% endif %}
+{% endif %}
+
+
+<!-- ========== Generation Algorythms ========== -->
+{# Generation  Example #}
+{% if action == "show_generation_example" %}
+  {% if generation_info.error %}
+    <p style="color: red;">{{ generation_info.error }}</p>
+  {% else %}
+    {% if mel_type == "2_component" %}
+      <h3>Generation Example (2-Component)</h3>
+      {{ macros.render_route("Route 1: Synthon 1 + MinCap 2 → Product", [generation_info.reagent_1, generation_info.reagent_2], generation_info.product_1) }}
+      {{ macros.render_route("Route 2: MinCap 1 + Synthon 2 → Product", [generation_info.reagent_3, generation_info.reagent_4], generation_info.product_2) }}
+    {% elif mel_type == "3_component" %}
+      <h3>Generation Example (3-Component)</h3>
+      {{ macros.render_route("Route 1", [generation_info.reagent_1, generation_info.reagent_2, generation_info.reagent_3], generation_info.product_1) }}
+      {{ macros.render_route("Route 2", [generation_info.reagent_4, generation_info.reagent_5, generation_info.reagent_6], generation_info.product_2) }}
+      {{ macros.render_route("Route 3", [generation_info.reagent_7, generation_info.reagent_8, generation_info.reagent_9], generation_info.product_3) }}
+    {% elif mel_type == "bridge" %}
+      <h3>Generation Example (Bridge)</h3>
+      {{ macros.render_route("Route 1: Synthon 1 + MinCap 2 → Product 1", [generation_info.reagent_1, generation_info.reagent_2], generation_info.product_1) }}
+      {{ macros.render_route("Route 2: Synthon 2 + MinCap 1 → Product 2", [generation_info.reagent_3, generation_info.reagent_4], generation_info.product_2) }}
+    {% endif %}
+{% endif %}
+{% endif %}
+
+<script>
+  function showCase(caseId) {
+    document.querySelectorAll('.case-container').forEach(el => {
+      el.style.display = 'none';
+    });
+    document.getElementById(caseId).style.display = 'block';
+  }
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const molImgs = document.querySelectorAll('.mol-container img');
+
+  molImgs.forEach(img => {
+    let clickTimeout = null;
+
+    img.addEventListener('click', (e) => {
+      if (clickTimeout !== null) {
+        // Double click detected, so clear timeout and don't toggle zoom here
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+        return;
+      }
+      clickTimeout = setTimeout(() => {
+        // Single click action: toggle zoom
+        if (img.style.transform === 'scale(2.5)') {
+          img.style.transform = 'scale(1)';
+          img.style.zIndex = '';
+          img.style.position = '';
+        } else {
+          img.style.transform = 'scale(2.5)';
+          img.style.zIndex = '1000';
+          img.style.position = 'relative';
+        }
+        clickTimeout = null;
+      }, 250); // wait 250ms to see if double click happens
+    });
+
+  });
+});
+</script>
+
+
+<!-- ========== End ========== -->
+{% endblock %}
